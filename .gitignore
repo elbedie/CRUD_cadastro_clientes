@@ -1,0 +1,49 @@
+# Diretórios de build
+bin/
+obj/
+
+# Arquivos de configuração do usuário
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Arquivos de configuração do Visual Studio
+.vs/
+*.vscode/
+
+# Arquivos temporários do sistema operacional
+*.log
+*.tmp
+*.swp
+*.swo
+*.DS_Store
+
+# Pacotes NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+
+# Arquivos de banco de dados
+*.mdf
+*.ldf
+
+# Diretórios de dependências do Node.js (se aplicável)
+node_modules/
+
+# Diretórios de build do Xamarin (se aplicável)
+.droid/
+.ios/
+
+# Arquivos de build do Rider (se aplicável)
+.idea/
+
+# Arquivos de build do JetBrains Rider (se aplicável)
+*.suo
+*.sln.docstates
+*.user
+
+# Outros arquivos ignorados
+*.vs/
+*.code-workspace
