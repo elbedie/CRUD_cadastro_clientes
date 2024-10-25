@@ -1,33 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CadastroDeClientes.Banco;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CadastroDeClientes
 {
     public class Menu
     {
-        static List<Cliente> clientes = new List<Cliente>();
         static bool continuarExecucao = true; // Controlar o while do menu 
+
         public static void ExibirTitulo()
         {
-            string titulo = "CADASTRO DE CLIENTES!";
-            int numLetras = titulo.Length;
-            Console.WriteLine(titulo);
-            Console.WriteLine(new string('-', numLetras ));
-
+            Console.WriteLine("=====================================");
+            Console.WriteLine("        CONTROLE DE CLIENTES        ");
+            Console.WriteLine("=====================================");
         }
 
-        public static void OpcaoDesejada ()
-        {
-            
-        }
         public static void ExibirMenu()
         {
-            
             while (continuarExecucao)
-            {            
+            {
                 Console.WriteLine("Selecione a opção desejada:");
                 Console.WriteLine("1 - Cadastrar cliente");
                 Console.WriteLine("2 - Exibir clientes");
@@ -41,12 +31,12 @@ namespace CadastroDeClientes
                 {
                     switch (opcaoDesejada)
                     {
-
                         case 1:
                             CadastrarCliente();
                             break;
                         case 2:
                             ExibirCliente();
+                            VoltarOuSair();
                             break;
                         case 3:
                             AtualizarCliente();
@@ -62,17 +52,13 @@ namespace CadastroDeClientes
                             Console.WriteLine(">>> Opção inválida. <<<");
                             Console.WriteLine("---------------------");
                             break;
-
                     }
-
                 }
-                else 
+                else
                 {
-                    Console.WriteLine("Opção não é válida. Insira um número válido.");                   
+                    Console.WriteLine("Opção não é válida. Insira um número válido.");
                 }
-
             }
-
         }
 
         public static void EncerrarPrograma()
@@ -83,15 +69,16 @@ namespace CadastroDeClientes
 
         public static void VoltarOuSair()
         {
-            int voltarOuSair;
-            Console.Write("Insira 1 para voltar ao Menu ou 0 para sair: ");           
-            if(int.TryParse(Console.ReadLine(), out voltarOuSair)){
+            Console.Write("Insira 1 para voltar ao Menu ou 0 para sair: ");
+            if (int.TryParse(Console.ReadLine(), out int voltarOuSair))
+            {
                 if (voltarOuSair == 1)
                 {
                     Console.WriteLine("Voltando para o Menu...");
                     Console.Clear();
-                }else if(voltarOuSair == 0)
-                {                    
+                }
+                else if (voltarOuSair == 0)
+                {
                     EncerrarPrograma();
                 }
                 else
@@ -100,52 +87,42 @@ namespace CadastroDeClientes
                     VoltarOuSair();
                 }
             }
-            else 
+            else
             {
                 Console.WriteLine("Opção inválida. Insira um número válido (1 ou 0):");
                 VoltarOuSair();
             }
-          
         }
 
         public static void CadastrarCliente()
         {
             Console.Clear();
 
-            Console.Write("Insira o nome do cliente: ");           
-            string nomeDoCliente = Console.ReadLine()!;
-            Cliente nomeRepetido = clientes.Find(c => c.Nome == nomeDoCliente);
-
-            if (nomeRepetido != null) 
+            Console.Write("Insira o nome do cliente: ");
+            string nomeDoCliente = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(nomeDoCliente))
             {
-                Console.Write("Atenção: Já existe um cliente no sistema com esse nome.\nDeseja cadastrar um novo cliente com o mesmo nome? [S]/[N]:");
-                string opcaoCadastrarNovo = Console.ReadLine()!;
-                if (opcaoCadastrarNovo.Equals("s", StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine("Cadastrando nome...");
-                }
-                else
-                {
-                    VoltarOuSair();
-                    return;
-                }
+                Console.WriteLine("Nome do cliente não pode ser vazio. Tente novamente.");
+                return;
             }
 
             Console.Write("Insira o e-mail do cliente: ");
-            string emailDoCliente = Console.ReadLine()!;
-
-            Cliente emailRepetido = clientes.Find(c => c.Email == emailDoCliente); // conferir se existe um e-mail igual na lista e atribuir o valor para o objeto emailRepetido            
-            if (emailRepetido != null) 
+            string emailDoCliente = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(emailDoCliente) || !emailDoCliente.Contains("@"))
             {
-                Console.WriteLine("Esse e-mail já existe no sistema. Cadastre outro.");
+                Console.WriteLine("E-mail inválido. Tente novamente.");
+                return;
             }
-            else
-            {
-                Cliente cliente = new Cliente (nomeDoCliente, emailDoCliente); // crie um objeto chamado cliente do tipo Cliente (classe)
-                clientes.Add(cliente); // adiciona o objeto criado (cliente) à lista clientes.
 
-                Console.WriteLine("Cliente adicionado com sucesso!");     
-            
+            try
+            {
+                var clienteDAL = new ClienteDAL();
+                clienteDAL.AdicionarCliente(new Cliente(nomeDoCliente, emailDoCliente));
+                Console.WriteLine("Cliente cadastrado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao cadastrar cliente: {ex.Message}");
             }
 
             VoltarOuSair();
@@ -153,64 +130,99 @@ namespace CadastroDeClientes
 
         public static void ExibirCliente()
         {
-            Console.Clear();
+            try
+            {
+                var clientes = new ClienteDAL();
+                var listaDeClientes = clientes.Listar();
 
-            foreach (Cliente cliente in clientes) { 
-                Console.WriteLine($"Nome do cliente: {cliente.Nome}"); 
-                Console.WriteLine($"E-mail do cliente: {cliente.Email}");
-                Console.WriteLine(new string('-', cliente.Email.Length));                
+                if (!listaDeClientes.Any())
+                {
+                    Console.WriteLine("Nenhum cliente cadastrado.");
+                    return;
+                }
+
+                foreach (var cliente in listaDeClientes)
+                {
+                    Console.WriteLine(cliente);
+                }
             }
-            VoltarOuSair();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao exibir clientes: {ex.Message}");
+            }
         }
 
         public static void AtualizarCliente()
         {
-            Console.Write("Digite o nome do cliente que deseja editar: ");
-            string nomeDoCliente = Console.ReadLine()!;
+            Console.Clear();
+            ExibirCliente();
 
-            Cliente cliente = clientes.Find(c => c.Nome == nomeDoCliente);
-
-            if (cliente != null)
+            Console.WriteLine("Insira o ID do cliente que deseja atualizar os dados: ");
+            if (!int.TryParse(Console.ReadLine(), out int id))
             {
-                Console.Write("Insira o novo nome do cliente: ");
-                string clienteNovoNome = Console.ReadLine()!;
-
-                Console.Write("Insira o novo e-mail do cliente: ");
-                string clienteNovoEmail = Console.ReadLine()!;
-
-                cliente.Nome = clienteNovoNome;
-                cliente.Email = clienteNovoEmail;
-
-                Console.WriteLine("Cliente editado com sucesso!");
-
-                VoltarOuSair();
-
+                Console.WriteLine("ID inválido. Tente novamente.");
+                return;
             }
-            else
+
+            Console.WriteLine("Insira o novo nome do cliente: ");
+            string novoNome = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(novoNome))
             {
-                Console.WriteLine("Cliente não encontrado.");
-                VoltarOuSair();
-            }    
+                Console.WriteLine("Nome inválido. Tente novamente.");
+                return;
+            }
+
+            Console.WriteLine("Insira o novo e-mail do cliente: ");
+            string novoEmail = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(novoEmail) || !novoEmail.Contains("@"))
+            {
+                Console.WriteLine("E-mail inválido. Tente novamente.");
+                return;
+            }
+
+            try
+            {
+                var clienteDAL = new ClienteDAL();
+                var cliente = new Cliente(novoNome, novoEmail);
+                clienteDAL.AtualizaCliente(id, cliente);
+                Console.WriteLine("Cliente atualizado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao atualizar cliente: {ex.Message}");
+            }
         }
 
         public static void DeletarCliente()
         {
-            Console.Write("Insira o nome do cliente que deseja apagar o cadastro: ");
-            string nomeDoCliente = Console.ReadLine()!;
-            
-            Cliente cliente = clientes.Find(c => c.Nome == nomeDoCliente);
+            Console.Clear();
+            ExibirCliente();
 
-            if (cliente != null)
+            Console.WriteLine("Insira o Id do cliente que deseja deletar: ");
+            if (!int.TryParse(Console.ReadLine(), out int id))
             {
-                clientes.Remove(cliente);
-                Console.WriteLine("Cliente removido do sistema!");
-                VoltarOuSair() ;
+                Console.WriteLine("ID inválido. Tente novamente.");
+                return;
             }
-            else 
+
+            try
             {
-                Console.WriteLine("Cliente não encontrado.");
-                VoltarOuSair();
+                var clienteDAL = new ClienteDAL();
+                int linhasAfetadas = clienteDAL.DeletaCliente(id);
+                if (linhasAfetadas > 0)
+                {
+                    Console.WriteLine("Cliente deletado com sucesso.");
+                }
+                else
+                {
+                    Console.WriteLine("Nenhum cliente encontrado com o ID fornecido.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao deletar cliente: {ex.Message}");
             }
         }
-    }   
+
+    }
 }
