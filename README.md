@@ -21,6 +21,6 @@ Este é um simples programa de console em C# para gerenciar um cadastro de clien
 
 ## Observações ⚠️
 - O programa valida entradas para garantir que opções inválidas sejam tratadas.
-- Não há persistência de dados entre execuções; todos os dados são perdidos ao encerrar o programa.
+- Dados são salvos em um Banco de Dados
 
 @elbedie
